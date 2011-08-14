@@ -22,26 +22,30 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author ikeike443
  */
 public class PlayTestResultPublisher extends Publisher {
+	
+	private String app_path;
+	
 	@DataBoundConstructor
-	public PlayTestResultPublisher() {
+	public PlayTestResultPublisher(String app_path) {
+		this.app_path = app_path;
 	}
 
 
 	@Override
 	public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
 		try {
-
-			FilePath[] files = build.getProject().getWorkspace().list("test-result/*");
-			FilePath root = new FilePath(build.getRootDir());
+			System.out.println("App path is " + app_path);
+			FilePath root = new FilePath(build.getWorkspace(), app_path);
+			FilePath[] files = root.list("test-result/*");
 			for (FilePath filePath : files) {
 				filePath.copyTo(new FilePath(root, "test-result/"+filePath.getName()));
 			}
 			Properties conf = new Properties();
 			InputStream inputStream = new FileInputStream(new File(
-					build.getWorkspace()+"/conf/application.conf"));
+					root.toString() + "/conf/application.conf"));
 			conf.load(inputStream);
 			
-			PlayTestResultAction act = new PlayTestResultAction(build);
+			PlayTestResultAction act = new PlayTestResultAction(root);
 			act.setPassed(new FilePath(root, "test-result/result.passed").exists());
 			act.setAppName(conf.getProperty("application.name"));//TODO set default name
 			build.addAction(act);

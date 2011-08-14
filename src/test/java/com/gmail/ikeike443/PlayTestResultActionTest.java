@@ -29,7 +29,7 @@ public class PlayTestResultActionTest extends HudsonTestCase {
 	@Test
 	public void testTestResultIsOK() throws Exception {
 		FreeStyleProject pj = createFreeStyleProject("testsuccess");
-		pj.getBuildersList().add(new PlayAutoTestBuilder("auto-test"));
+		pj.getBuildersList().add(new PlayAutoTestBuilder("auto-test", ""));
 		FreeStyleBuild build = pj.scheduleBuild2(0).get();//must be failure but don't care
 		System.out.println(build.getDisplayName()+" completed");
 		//setup
@@ -43,7 +43,7 @@ public class PlayTestResultActionTest extends HudsonTestCase {
 		conf.load(inputStream);
 		inputStream.close();
 		
-		PlayTestResultAction act = new PlayTestResultAction(build);
+		PlayTestResultAction act = new PlayTestResultAction(root);
 		act.setPassed(new FilePath(root, "test-result/result.passed").exists());
 		act.setAppName(conf.getProperty("application.name"));//TODO set default name
 		build.addAction(act);
@@ -61,7 +61,7 @@ public class PlayTestResultActionTest extends HudsonTestCase {
 	@Test
 	public void testTestResultIsNG() throws Exception {
 		FreeStyleProject pj = createFreeStyleProject("testfailure");
-		pj.getBuildersList().add(new PlayAutoTestBuilder("auto-test"));
+		pj.getBuildersList().add(new PlayAutoTestBuilder("auto-test", ""));
 		FreeStyleBuild build = pj.scheduleBuild2(0).get();//must be failure but don't care
 		System.out.println(build.getDisplayName()+" completed");
 		//setup
@@ -75,7 +75,7 @@ public class PlayTestResultActionTest extends HudsonTestCase {
 		conf.load(inputStream);
 		inputStream.close();
 		
-		PlayTestResultAction act = new PlayTestResultAction(build);
+		PlayTestResultAction act = new PlayTestResultAction(root);
 		act.setPassed(new FilePath(root, "test-result/result.passed").exists());
 		act.setAppName(conf.getProperty("application.name"));
 		build.addAction(act);

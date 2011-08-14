@@ -28,10 +28,12 @@ import org.kohsuke.stapler.StaplerRequest;
 public class PlayAutoTestBuilder extends Builder{
 
 	private final String play_cmd;
-
+	private final String app_path;
+	
 	@DataBoundConstructor
-	public PlayAutoTestBuilder(String play_cmd) {
+	public PlayAutoTestBuilder(String play_cmd, String app_path) {
 		this.play_cmd = play_cmd;
+		this.app_path = app_path;
 	}
 
 	/**
@@ -40,13 +42,18 @@ public class PlayAutoTestBuilder extends Builder{
 	public String getPlay_cmd() {
 		return play_cmd;
 	}
+	
+	public String getApp_path() {
+		return app_path;
+	}
 
 	@SuppressWarnings("deprecation")
 	@Override
 	public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
 		//clean up
+		FilePath applicationPath = build.getWorkspace().child(app_path);
 		try {
-			FilePath[] files = build.getProject().getWorkspace().list("test-result/*");
+			FilePath[] files = applicationPath.list("test-result/*");
 			
 			for (FilePath filePath : files) {
 				filePath.delete();
@@ -56,7 +63,6 @@ public class PlayAutoTestBuilder extends Builder{
 			return false;
 		}
 		
-
 		String playpath = null;
 		if(getDescriptor().path()!= null){
 			playpath = getDescriptor().path();
@@ -66,27 +72,28 @@ public class PlayAutoTestBuilder extends Builder{
 		}
 
 		listener.getLogger().println("play path is "+playpath);
-		if( ! "auto-test".equals(play_cmd) ){
-			listener.getLogger().println("play command '"+play_cmd+"' you set is not supported at this version. 'auto-test' is always available.");
-			System.out.println("play command '"+play_cmd+"' you set is not supported at this version. 'auto-test' is always available.");
+		if(!"auto-test".equals(play_cmd) ){
+			listener.getLogger().println("play command '" + play_cmd + "' you set is not supported at this version. 'auto-test' is always available.");
+			System.out.println("play command '" + play_cmd + "' you set is not supported at this version. 'auto-test' is always available.");
 			return false;
 		}
 		try {
-
-			String cmd = playpath + " " + play_cmd +" "+build.getWorkspace().toString();
+			String cmd = playpath + " " + play_cmd +" "+ applicationPath.toString();
+			
+			System.out.println("******* Command: " + cmd);
 			listener.getLogger().println(cmd);
-			Proc proc = launcher.launch(cmd, new String[0],listener.getLogger(),build.getWorkspace());
+			Proc proc = launcher.launch(cmd, new String[0],listener.getLogger(),applicationPath);
 			int exitcode = proc.join();	
 
 			if(exitcode == 0){
 				//check test-result
-				if(new File(build.getWorkspace().toString()+"/test-result/result.passed").exists()){
+				if(new File(applicationPath.toString() + "/test-result/result.passed").exists()){
 					return true;
-				}else{
+				} else {
 					build.setResult(Result.UNSTABLE);
 					return true;
 				}
-			}else{
+			} else {
 				listener.getLogger().println("play test failed");
 				return false;
 			}

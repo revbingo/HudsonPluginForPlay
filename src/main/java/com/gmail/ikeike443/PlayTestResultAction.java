@@ -3,6 +3,7 @@
  */
 package com.gmail.ikeike443;
 
+import hudson.FilePath;
 import hudson.PluginWrapper;
 import hudson.model.Action;
 import hudson.model.AbstractBuild;
@@ -29,15 +30,12 @@ import com.gmail.ikeike443.PlayTestResult;
  *
  */
 public class PlayTestResultAction implements Action{
-	private AbstractBuild<?, ?> owner;
+	private FilePath appRoot;
 	private String statusatall;
 	private String appName;
-	public AbstractBuild<?, ?> getOwner() {
-		return this.owner;
-	}
 
-	public PlayTestResultAction(AbstractBuild<?, ?> owner) {
-		this.owner = owner;
+	public PlayTestResultAction(FilePath appRoot) {
+		this.appRoot = appRoot;
 	}
 
 	/* (non-Javadoc)
@@ -61,11 +59,11 @@ public class PlayTestResultAction implements Action{
 		return "playTestResult";
 	}
 	public boolean getApplicationlogExists(){
-		return new File(owner.getRootDir()+"/test-result/application.log").exists();
+		return new File(appRoot.toString() + "/test-result/application.log").exists();
 	}
 
 	public String getApplicationlog(){
-		if(new File(owner.getRootDir()+"/test-result/application.log").exists()){
+		if(new File(appRoot.toString() +"/test-result/application.log").exists()){
 			return "test-result/application.log";
 		}else{
 			return "";
@@ -73,7 +71,7 @@ public class PlayTestResultAction implements Action{
 	}
 	public List<PlayTestResult> getTestResults(){
 		List<PlayTestResult> rt = new ArrayList<PlayTestResult>();
-		String[] files = new File(owner.getRootDir()+"/test-result").list(new FilenameFilter(){
+		String[] files = new File(appRoot.toString() + "/test-result").list(new FilenameFilter(){
 			public boolean accept(File file, String name) {  
 				boolean ret = name.endsWith(".html");   
 				return ret;  
@@ -96,7 +94,7 @@ public class PlayTestResultAction implements Action{
 
 	public void doDynamic(StaplerRequest req, StaplerResponse res) throws IOException{
 		System.out.println(req.getRestOfPath());
-		FileInputStream fileInputStream = new FileInputStream(owner.getRootDir()+req.getRestOfPath());
+		FileInputStream fileInputStream = new FileInputStream(appRoot.toString() + req.getRestOfPath());
 		ServletOutputStream out = res.getOutputStream();
 		int i;
 		while((i=fileInputStream.read())!=-1){out.write(i);}
