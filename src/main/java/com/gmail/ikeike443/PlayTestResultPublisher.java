@@ -35,14 +35,14 @@ public class PlayTestResultPublisher extends Publisher {
 	public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
 		try {
 			System.out.println("App path is " + app_path);
-			FilePath root = new FilePath(build.getWorkspace(), app_path);
-			FilePath[] files = root.list("test-result/*");
+			FilePath root = new FilePath(build.getRootDir());
+			FilePath[] files = build.getProject().getWorkspace().list(app_path + "/test-result/*");
 			for (FilePath filePath : files) {
 				filePath.copyTo(new FilePath(root, "test-result/"+filePath.getName()));
 			}
 			Properties conf = new Properties();
 			InputStream inputStream = new FileInputStream(new File(
-					root.toString() + "/conf/application.conf"));
+					build.getWorkspace() + "/" + app_path + "/conf/application.conf"));
 			conf.load(inputStream);
 			
 			PlayTestResultAction act = new PlayTestResultAction(root);
