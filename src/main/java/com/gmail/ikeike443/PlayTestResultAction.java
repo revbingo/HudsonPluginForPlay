@@ -4,10 +4,7 @@
 package com.gmail.ikeike443;
 
 import hudson.FilePath;
-import hudson.PluginWrapper;
 import hudson.model.Action;
-import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,8 +19,6 @@ import javax.servlet.ServletOutputStream;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import com.gmail.ikeike443.PlayTestResult;
 
 /**
  * @author ikeike443
